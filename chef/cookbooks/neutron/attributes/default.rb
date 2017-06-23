@@ -119,6 +119,11 @@ when "suse"
                     "openstack-neutron-infoblox-ipam-agent"],
     vmware_vsphere_pkg: "openstack-neutron-vsphere",
     vmware_vsphere_dvs_agent_pkg: "openstack-neutron-vsphere-dvs-agent",
+    midonet_controller_pkgs: ["python-midonetclient",
+                              "python-networking-midonet-ext",
+                              "python-neutron-lbaas",
+                              "python-neutron-fwaas",
+                              "midonet-cluster"],
     midonet_nsdb_pkgs: ["zookeeper-server",
                         "cassandra"],
     user: "neutron",
@@ -164,6 +169,11 @@ when "rhel"
     infoblox_pkgs: [],
     vmware_vsphere_pkg: "",
     vmware_vsphere_dvs_agent_pkg: "",
+    midonet_controller_pkgs: ["python-midonetclient",
+                              "python-networking-midonet-ext",
+                              "python-neutron-lbaas",
+                              "python-neutron-fwaas",
+                              "midonet-cluster"],
     midonet_nsdb_pkgs: ["zookeeper",
                         "dsc22"],
     user: "neutron",
@@ -208,6 +218,11 @@ else
     infoblox_pkgs: [],
     vmware_vsphere_pkg: "openstack-neutron-vsphere",
     vmware_vsphere_dvs_agent_pkg: "openstack-neutron-vsphere-dvs-agent",
+    midonet_controller_pkgs: ["python-midonetclient",
+                              "python-networking-midonet-ext",
+                              "python-neutron-lbaas",
+                              "python-neutron-fwaas",
+                              "midonet-cluster"],
     midonet_nsdb_pkgs: ["zookeeper-server",
                         "cassandra"],
     user: "neutron",
@@ -250,3 +265,6 @@ default[:neutron][:ha][:infoblox][:infoblox_ra] =
 default[:neutron][:ha][:infoblox][:op][:monitor][:interval] = "10s"
 # Ports to bind to when haproxy is used for the real ports
 default[:neutron][:ha][:ports][:server] = 5530
+
+default[:neutron][:midonet][:username] = "midonet"
+default[:neutron][:midonet][:port] = 8181

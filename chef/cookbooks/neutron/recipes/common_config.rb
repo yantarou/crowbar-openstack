@@ -78,20 +78,39 @@ else
     nova[:nova][:ssl][:enabled] && nova[:nova][:ssl][:insecure])
 end
 
-service_plugins = ["neutron.services.metering.metering_plugin.MeteringPlugin",
-                   "neutron_fwaas.services.firewall.fwaas_plugin.FirewallPlugin"]
-if neutron[:neutron][:use_lbaas]
+case neutron[:neutron][:networking_plugin]
+when "midonet"
+  core_plugin = "midonet_v2_ext"
+  service_plugins = ["midonet_l3_ext"]
+  allow_overlapping_ips = true
+  # In order to enable 'fip64' extension feature, the API extension path must
+  # be specified.  The path depends on the directory location in which
+  # python-networking-midonet-ext is installed.
+  api_extensions_path = "/usr/lib/python2.7/site-packages/midonet_ext/neutron/extensions"
+  service_plugins.push("neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2")
+  service_plugins.push("midonet.neutron.services.firewall.plugin.MidonetFirewallPlugin")
+  service_plugins.push("qos")
+else
+  core_plugin = neutron[:neutron][:networking_plugin]
+  service_plugins = ["neutron.services.metering.metering_plugin.MeteringPlugin",
+                     "neutron_fwaas.services.firewall.fwaas_plugin.FirewallPlugin"]
+  allow_overlapping_ips = neutron[:neutron][:allow_overlapping_ips]
+  api_extensions_path = ""
+
+  if neutron[:neutron][:networking_plugin] == "ml2"
+    service_plugins.unshift("neutron.services.l3_router.l3_router_plugin.L3RouterPlugin")
+    if neutron[:neutron][:ml2_mechanism_drivers].include?("cisco_apic_ml2")
+      service_plugins = ["cisco_apic_l3"]
+    elsif neutron[:neutron][:ml2_mechanism_drivers].include?("apic_gbp")
+      service_plugins = ["group_policy", "servicechain", "apic_gbp_l3"]
+    end
+  end
+end
+
+if neutron[:neutron][:use_lbaas] && neutron[:neutron][:networking_plugin] != "midonet"
   service_plugins.push("neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2")
 end
 
-if neutron[:neutron][:networking_plugin] == "ml2"
-  service_plugins.unshift("neutron.services.l3_router.l3_router_plugin.L3RouterPlugin")
-  if neutron[:neutron][:ml2_mechanism_drivers].include?("cisco_apic_ml2")
-    service_plugins = ["cisco_apic_l3"]
-  elsif neutron[:neutron][:ml2_mechanism_drivers].include?("apic_gbp")
-    service_plugins = ["group_policy", "servicechain", "apic_gbp_l3"]
-  end
-end
 service_plugins = service_plugins.join(", ")
 
 network_nodes_count = neutron[:neutron][:elements]["neutron-network"].count
@@ -136,21 +155,26 @@ template neutron[:neutron][:config_file] do
       ssl_cert_required: neutron[:neutron][:ssl][:cert_required],
       ssl_ca_file: neutron[:neutron][:ssl][:ca_certs],
       nova_insecure: nova_insecure,
-      core_plugin: neutron[:neutron][:networking_plugin],
+      core_plugin: core_plugin,
       service_plugins: service_plugins,
-      allow_overlapping_ips: neutron[:neutron][:allow_overlapping_ips],
+      allow_overlapping_ips: allow_overlapping_ips,
       dvr_enabled: neutron[:neutron][:use_dvr],
       network_nodes_count: network_nodes_count,
       dns_domain: neutron[:neutron][:dhcp_domain],
       mtu_value: mtu_value,
       infoblox: infoblox_settings,
       ipam_driver: ipam_driver,
-      rpc_workers: neutron[:neutron][:rpc_workers]
+      rpc_workers: neutron[:neutron][:rpc_workers],
+      api_extensions_path: api_extensions_path
     )
 end
 
-if neutron[:neutron][:use_lbaas]
-  interface_driver = "neutron.agent.linux.interface.OVSInterfaceDriver"
+if neutron[:neutron][:use_lbaas] || neutron[:neutron][:networking_plugin] == "midonet"
+  if neutron[:neutron][:networking_plugin] == "midonet"
+    interface_driver = "midonet"
+  else
+    interface_driver = "neutron.agent.linux.interface.OVSInterfaceDriver"
+  end
   if neutron[:neutron][:networking_plugin] == "ml2" &&
       neutron[:neutron][:ml2_mechanism_drivers].include?("linuxbridge")
     interface_driver = "neutron.agent.linux.interface.BridgeInterfaceDriver"
@@ -165,6 +189,7 @@ if neutron[:neutron][:use_lbaas]
       interface_driver: interface_driver,
       use_lbaas: neutron[:neutron][:use_lbaas],
       lbaasv2_driver: neutron[:neutron][:lbaasv2_driver],
+      networking_plugin: neutron[:neutron][:networking_plugin],
       keystone_settings: keystone_settings
     )
   end
@@ -175,4 +200,3 @@ if node[:platform_family] == "rhel"
     to node[:neutron][:config_file]
   end
 end
-
