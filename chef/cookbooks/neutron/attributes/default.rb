@@ -116,6 +116,8 @@ when "suse"
     infoblox_pkgs: ["python-infoblox-client",
                     "openstack-neutron-infoblox",
                     "openstack-neutron-infoblox-ipam-agent"],
+    midonet_nsdb_pkgs: ["zookeeper-server",
+                        "cassandra"],
     user: "neutron",
     group: "neutron",
   }
@@ -157,6 +159,8 @@ when "rhel"
                         "lldpd",
                         "neutron-opflex-agent"],
     infoblox_pkgs: [],
+    midonet_nsdb_pkgs: ["zookeeper",
+                        "dsc22"],
     user: "neutron",
     group: "neutron",
   }
@@ -197,6 +201,8 @@ else
     cisco_apic_gbp_pkgs: [""],
     cisco_opflex_pkgs: [""],
     infoblox_pkgs: [],
+    midonet_nsdb_pkgs: ["zookeeper-server",
+                        "cassandra"],
     user: "neutron",
     group: "neutron",
   }
