@@ -111,6 +111,9 @@
                       "clean_on_restart": { "type" : "bool", "required" : true },
                       "precreate_networks": { "type" : "bool", "required" : true }
                     }},
+                    "midonet": { "type": "map", "required": true, "mapping": {
+                      "zone_protocol": { "type" : "str", "required" : true }
+                    }},
                     "zvm": { "type": "map", "required": true, "mapping": {
                       "zvm_xcat_server": { "type": "str", "required": true },
                       "zvm_xcat_username": { "type": "str", "required": true },
