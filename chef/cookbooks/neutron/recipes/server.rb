@@ -22,12 +22,9 @@ pkgs = node[:neutron][:platform][:pkgs] + node[:neutron][:platform][:pkgs_fwaas]
 pkgs += node[:neutron][:platform][:pkgs_lbaas] if node[:neutron][:use_lbaas]
 pkgs += node[:neutron][:platform][:infoblox_pkgs] if node[:neutron][:use_infoblox]
 
-if use_hyperv
-  pkgs << node[:neutron][:platform][:hyperv_pkg]
-end
-if use_zvm
-  pkgs << node[:neutron][:platform][:zvm_agent_pkg]
-end
+pkgs << node[:neutron][:platform][:hyperv_pkg] if use_hyperv
+pkgs << node[:neutron][:platform][:zvm_agent_pkg] if use_zvm
+
 pkgs.each { |p| package p }
 
 include_recipe "neutron::database"
@@ -99,7 +96,7 @@ end
 directory "/var/cache/neutron" do
   owner node[:neutron][:user]
   group node[:neutron][:group]
-  mode 0755
+  mode 0o755
   action :create
   only_if { node[:platform_family] == "debian" }
 end
@@ -118,7 +115,7 @@ vni_start = [node[:neutron][:vxlan][:vni_start], 0].max
 vni_end = [node[:neutron][:vxlan][:vni_end], 16777215].min
 
 directory "/etc/neutron/plugins/ml2" do
-  mode 0755
+  mode 0o755
   action :create
   only_if { node[:platform_family] == "debian" }
 end
@@ -172,7 +169,7 @@ when "ml2"
     source "ml2_conf.ini.erb"
     owner "root"
     group node[:neutron][:platform][:group]
-    mode "0640"
+    mode 0o640
     variables(
       ml2_mechanism_drivers: ml2_mechanism_drivers,
       ml2_extension_drivers: ml2_extension_drivers,
@@ -192,12 +189,12 @@ when "ml2"
   end
 when "vmware"
   directory "/etc/neutron/plugins/vmware/" do
-     mode 00755
-     owner "root"
-     group node[:neutron][:platform][:group]
-     action :create
-     recursive true
-     not_if { node[:platform_family] == "suse" }
+    mode 0o755
+    owner "root"
+    group node[:neutron][:platform][:group]
+    action :create
+    recursive true
+    not_if { node[:platform_family] == "suse" }
   end
 
   template "/etc/neutron/plugins/vmware/nsx.ini" do
@@ -205,7 +202,7 @@ when "vmware"
     source "nsx.ini.erb"
     owner "root"
     group node[:neutron][:platform][:group]
-    mode "0640"
+    mode 0o640
     variables(
       vmware_config: node[:neutron][:vmware]
     )
@@ -227,7 +224,7 @@ if node[:neutron][:use_lbaas]
     source "services_lbaas.conf.erb"
     owner "root"
     group node[:neutron][:platform][:group]
-    mode "0640"
+    mode 0o640
     variables(
       interface_driver: interface_driver
     )
