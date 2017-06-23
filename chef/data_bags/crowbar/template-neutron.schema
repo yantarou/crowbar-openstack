@@ -103,6 +103,9 @@
                       "tz_uuid": { "type" : "str", "required" : true },
                       "l3_gw_uuid": { "type" : "str", "required" : true }
                     }},
+                    "midonet": { "type": "map", "required": true, "mapping": {
+                      "zone_protocol": { "type" : "str", "required" : true }
+                    }},
                     "zvm": { "type": "map", "required": true, "mapping": {
                       "zvm_xcat_server": { "type": "str", "required": true },
                       "zvm_xcat_username": { "type": "str", "required": true },
