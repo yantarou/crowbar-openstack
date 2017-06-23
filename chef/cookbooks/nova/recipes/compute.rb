@@ -175,6 +175,15 @@ case node[:nova][:libvirt_type]
         libvirt_group = "root"
       end
 
+      dev_net_tun_acl = false
+
+      neutron_server = search_env_filtered(:node, "roles:neutron-server").first
+      if !neutron_server.nil? && neutron_server[:neutron][:networking_plugin] == "midonet"
+        libvirt_user = "root"
+        libvirt_group = "root"
+        dev_net_tun_acl = true
+      end
+
       template "/etc/libvirt/qemu.conf" do
         source "qemu.conf.erb"
         group "root"
@@ -182,7 +191,8 @@ case node[:nova][:libvirt_type]
         mode 0644
         variables(
             user: libvirt_user,
-            group: libvirt_group
+            group: libvirt_group,
+            dev_net_tun_acl: dev_net_tun_acl
         )
         notifies :create, "ruby_block[restart_libvirtd]", :immediately
       end
