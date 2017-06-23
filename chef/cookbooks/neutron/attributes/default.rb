@@ -116,6 +116,11 @@ when "suse"
     infoblox_pkgs: ["python-infoblox-client",
                     "openstack-neutron-infoblox",
                     "openstack-neutron-infoblox-ipam-agent"],
+    midonet_controller_pkgs: ["python-midonetclient",
+                              "python-networking-midonet-ext",
+                              "python-neutron-lbaas",
+                              "python-neutron-fwaas",
+                              "midonet-cluster"],
     midonet_nsdb_pkgs: ["zookeeper-server",
                         "cassandra"],
     user: "neutron",
@@ -159,6 +164,11 @@ when "rhel"
                         "lldpd",
                         "neutron-opflex-agent"],
     infoblox_pkgs: [],
+    midonet_controller_pkgs: ["python-midonetclient",
+                              "python-networking-midonet-ext",
+                              "python-neutron-lbaas",
+                              "python-neutron-fwaas",
+                              "midonet-cluster"],
     midonet_nsdb_pkgs: ["zookeeper",
                         "dsc22"],
     user: "neutron",
@@ -201,6 +211,11 @@ else
     cisco_apic_gbp_pkgs: [""],
     cisco_opflex_pkgs: [""],
     infoblox_pkgs: [],
+    midonet_controller_pkgs: ["python-midonetclient",
+                              "python-networking-midonet-ext",
+                              "python-neutron-lbaas",
+                              "python-neutron-fwaas",
+                              "midonet-cluster"],
     midonet_nsdb_pkgs: ["zookeeper-server",
                         "cassandra"],
     user: "neutron",
@@ -243,3 +258,6 @@ default[:neutron][:ha][:infoblox][:infoblox_ra] =
 default[:neutron][:ha][:infoblox][:op][:monitor][:interval] = "10s"
 # Ports to bind to when haproxy is used for the real ports
 default[:neutron][:ha][:ports][:server] = 5530
+
+default[:neutron][:midonet][:username] = "midonet"
+default[:neutron][:midonet][:port] = 8181
